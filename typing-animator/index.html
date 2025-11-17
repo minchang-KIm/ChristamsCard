@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Human-like Typing Animator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⌨️ Human-like Typing Animator</h1>
+            <p class="subtitle">실제 사람이 타이핑하는 것처럼 랜덤한 속도로 텍스트를 출력합니다</p>
+        </header>
+
+        <div class="main-content">
+            <div class="input-section">
+                <h2>텍스트 입력</h2>
+                <textarea
+                    id="inputText"
+                    placeholder="타이핑하고 싶은 텍스트를 입력하세요..."
+                    rows="6"
+                ></textarea>
+
+                <div class="controls">
+                    <div class="speed-control">
+                        <label for="speedRange">타이핑 속도:</label>
+                        <input
+                            type="range"
+                            id="speedRange"
+                            min="1"
+                            max="5"
+                            value="3"
+                            step="1"
+                        >
+                        <span id="speedLabel">보통</span>
+                    </div>
+
+                    <div class="button-group">
+                        <button id="startBtn" class="btn btn-primary">
+                            <span class="btn-icon">▶️</span> 타이핑 시작 (Enter)
+                        </button>
+                        <button id="pauseBtn" class="btn btn-secondary" disabled>
+                            <span class="btn-icon">⏸️</span> 일시정지
+                        </button>
+                        <button id="stopBtn" class="btn btn-danger" disabled>
+                            <span class="btn-icon">⏹️</span> 중지
+                        </button>
+                        <button id="clearBtn" class="btn btn-warning">
+                            <span class="btn-icon">🗑️</span> 지우기
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="output-section">
+                <div class="output-header">
+                    <h2>타이핑 출력</h2>
+                    <div class="status">
+                        <span id="statusText">대기 중...</span>
+                        <span id="progressText"></span>
+                    </div>
+                </div>
+                <div id="output" class="output-area">
+                    <span class="cursor">|</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="features">
+            <h3>주요 기능</h3>
+            <ul>
+                <li>🎯 실제 사람처럼 랜덤한 타이핑 속도</li>
+                <li>⏱️ 문장부호에서 자연스러운 지연</li>
+                <li>⌨️ Enter 키로 빠른 시작</li>
+                <li>⏸️ 일시정지 및 재개 기능</li>
+                <li>🎨 실시간 커서 애니메이션</li>
+                <li>📊 진행률 표시</li>
+            </ul>
+        </div>
+
+        <footer>
+            <p>Made with ❤️ | 키보드 단축키: Enter (시작/재개), Space (일시정지), Esc (중지)</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
