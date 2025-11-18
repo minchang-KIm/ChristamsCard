@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎄 Christmas AI Drawing Battle 🎄</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- 눈 내리는 효과 -->
+    <div class="snow-container" id="snowContainer"></div>
+
+    <!-- 매칭 화면 -->
+    <div id="matchingScreen" class="screen active">
+        <div class="matching-container">
+            <h1 class="game-title">🎄 Christmas AI Drawing Battle 🎄</h1>
+            <p class="game-subtitle">그림으로 싸우는 크리스마스 배틀!</p>
+
+            <div class="instructions">
+                <h2>게임 방법</h2>
+                <ul>
+                    <li>🎨 제시된 그림을 최대한 비슷하게 그리세요</li>
+                    <li>⚔️ 유사도가 높을수록 강한 병사가 생성됩니다</li>
+                    <li>🛡️ 전략적 선택: 많고 약한 병사 vs 적고 강한 병사</li>
+                    <li>💖 상대의 본체 체력을 0으로 만들면 승리!</li>
+                </ul>
+            </div>
+
+            <button id="findMatchBtn" class="main-button">
+                <span class="button-icon">🎮</span>
+                <span class="button-text">게임 시작</span>
+            </button>
+
+            <div id="waitingMessage" class="waiting-message hidden">
+                <div class="spinner"></div>
+                <p>상대를 찾는 중...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 게임 화면 -->
+    <div id="gameScreen" class="screen">
+        <!-- 상단 UI -->
+        <div class="game-header">
+            <div class="player-info player-left">
+                <div class="player-label">당신</div>
+                <div class="health-bar-container">
+                    <div class="health-bar" id="playerHealthBar">
+                        <div class="health-fill"></div>
+                    </div>
+                    <div class="health-text" id="playerHealthText">1000 / 1000</div>
+                </div>
+            </div>
+
+            <div class="game-timer">
+                <div class="timer-icon">⏱️</div>
+                <div id="gameTime">0:00</div>
+            </div>
+
+            <div class="player-info player-right">
+                <div class="player-label">상대</div>
+                <div class="health-bar-container">
+                    <div class="health-bar" id="opponentHealthBar">
+                        <div class="health-fill"></div>
+                    </div>
+                    <div class="health-text" id="opponentHealthText">1000 / 1000</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 전투 필드 -->
+        <div class="battlefield-container">
+            <canvas id="battlefieldCanvas"></canvas>
+
+            <!-- 베이스 표시 -->
+            <div class="base base-left">
+                <div class="base-icon">🏰</div>
+                <div class="base-label">당신의 성</div>
+            </div>
+            <div class="base base-right">
+                <div class="base-icon">🏰</div>
+                <div class="base-label">상대의 성</div>
+            </div>
+        </div>
+
+        <!-- 드로잉 패널 -->
+        <div class="drawing-panel">
+            <div class="prompt-section">
+                <h3>제시어</h3>
+                <div class="current-prompt">
+                    <div class="prompt-icon" id="promptIcon">🎅</div>
+                    <div class="prompt-details">
+                        <div class="prompt-name" id="promptName">산타 전사</div>
+                        <div class="prompt-type" id="promptType">공격형</div>
+                        <div class="prompt-desc" id="promptDesc">선물 폭탄을 던지는 산타</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="canvas-section">
+                <div class="canvas-header">
+                    <h3>그림 그리기</h3>
+                    <div class="canvas-tools">
+                        <input type="color" id="colorPicker" value="#FF0000">
+                        <input type="range" id="brushSize" min="1" max="20" value="5">
+                        <button id="clearCanvas" class="tool-button">🗑️ 지우기</button>
+                    </div>
+                </div>
+                <canvas id="drawingCanvas" width="400" height="400"></canvas>
+
+                <div class="similarity-display">
+                    <div class="similarity-label">유사도:</div>
+                    <div class="similarity-bar">
+                        <div class="similarity-fill" id="similarityFill"></div>
+                    </div>
+                    <div class="similarity-value" id="similarityValue">0%</div>
+                </div>
+
+                <button id="createUnitBtn" class="action-button">
+                    <span class="button-icon">⚔️</span>
+                    <span class="button-text">병사 생성!</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 게임 종료 화면 -->
+    <div id="gameOverScreen" class="screen">
+        <div class="game-over-container">
+            <div class="result-icon" id="resultIcon">🏆</div>
+            <h1 class="result-title" id="resultTitle">승리!</h1>
+            <div class="result-message" id="resultMessage">축하합니다! 크리스마스 전투에서 승리하셨습니다!</div>
+
+            <div class="game-stats">
+                <h3>게임 통계</h3>
+                <div class="stat-row">
+                    <span class="stat-label">플레이 시간:</span>
+                    <span class="stat-value" id="finalTime">0:00</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">생성한 병사:</span>
+                    <span class="stat-value" id="unitsCreated">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">평균 유사도:</span>
+                    <span class="stat-value" id="avgSimilarity">0%</span>
+                </div>
+            </div>
+
+            <button id="playAgainBtn" class="main-button">
+                <span class="button-icon">🔄</span>
+                <span class="button-text">다시 플레이</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.11.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.0"></script>
+    <script src="similarity.js"></script>
+    <script src="drawing.js"></script>
+    <script src="renderer.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
