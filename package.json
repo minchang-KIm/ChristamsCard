@@ -1,0 +1,21 @@
+{
+  "name": "christmas-ai-battle-game",
+  "version": "1.0.0",
+  "description": "Real-time AI Drawing Battle Game with Christmas Theme",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "nodemon server/server.js"
+  },
+  "keywords": ["game", "ai", "drawing", "realtime", "christmas"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.6.1",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
