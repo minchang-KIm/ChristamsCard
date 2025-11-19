@@ -23,6 +23,12 @@ class DrawingCanvas {
     const dpr = window.devicePixelRatio || 1;
     const rect = this.canvas.getBoundingClientRect();
 
+    // 크기가 0이면 기다렸다가 다시 시도
+    if (rect.width === 0 || rect.height === 0) {
+      setTimeout(() => this.setupCanvas(), 100);
+      return;
+    }
+
     this.canvas.width = rect.width * dpr;
     this.canvas.height = rect.height * dpr;
 
