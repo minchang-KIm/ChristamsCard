@@ -3,6 +3,7 @@ const http = require('http');
 const socketIo = require('socket.io');
 const path = require('path');
 const GameManager = require('./gameManager');
+const TRPGManager = require('./trpgManager');
 
 const app = express();
 const server = http.createServer(app);
@@ -14,6 +15,7 @@ const io = socketIo(server, {
 });
 
 const gameManager = new GameManager();
+const trpgManager = new TRPGManager();
 
 // 정적 파일 제공
 app.use(express.static(path.join(__dirname, '..')));
@@ -28,19 +30,10 @@ app.get('/game', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'game', 'index.html'));
 });
 
-// 게임 허브 페이지
-app.get('/games.html', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'games.html'));
+// TRPG 페이지
+app.get('/trpg', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'trpg', 'index.html'));
 });
-
-// 개별 게임 페이지들
-app.get('/games/:gameName', (req, res) => {
-  const gameName = req.params.gameName;
-  res.sendFile(path.join(__dirname, '..', 'games', gameName, 'index.html'));
-});
-
-// 멀티플레이어 게임 룸 관리
-const gameRooms = new Map();
 
 // Socket.io 연결 처리
 io.on('connection', (socket) => {
@@ -113,79 +106,123 @@ io.on('connection', (socket) => {
     }
   });
 
-  // === 보드 게임 이벤트 핸들러 ===
+  // ===== TRPG 이벤트 =====
 
-  // 방 생성
-  socket.on('createRoom', (data) => {
-    const { roomId, game } = data;
-    gameRooms.set(roomId, {
-      game: game,
-      players: [socket.id],
-      sockets: [socket],
-      state: 'waiting',
-      gameData: {}
-    });
-    socket.join(roomId);
-    socket.emit('roomCreated', { roomId });
-    console.log(`🎲 Room created: ${roomId} for ${game}`);
-  });
-
-  // 방 참가
-  socket.on('joinRoom', (data) => {
-    const { roomId, game } = data;
-    const room = gameRooms.get(roomId);
-
-    if (!room) {
-      socket.emit('error', { message: 'Room not found' });
-      return;
+  // TRPG 방 생성
+  socket.on('create_trpg_room', (data) => {
+    const result = trpgManager.createRoom(socket.id, socket, data.playerName);
+    if (result.success) {
+      socket.emit('room_created', result);
+    } else {
+      socket.emit('error', { message: result.error });
     }
+  });
 
-    if (room.players.length >= 2) {
-      socket.emit('error', { message: 'Room is full' });
-      return;
+  // TRPG 방 참가
+  socket.on('join_trpg_room', (data) => {
+    const result = trpgManager.joinRoom(data.roomCode, socket.id, socket, data.playerName);
+    if (result.success) {
+      socket.emit('room_joined', result);
+    } else {
+      socket.emit('error', { message: result.error });
     }
-
-    room.players.push(socket.id);
-    room.sockets.push(socket);
-    room.state = 'playing';
-    socket.join(roomId);
-
-    socket.emit('roomJoined', { roomId });
-    io.to(roomId).emit('gameStart');
-    console.log(`🎲 Player joined room: ${roomId}`);
   });
 
-  // 게임 이동 (오목, 체스, 바둑 등)
-  socket.on('makeMove', (data) => {
-    const { roomId } = data;
-    io.to(roomId).emit('moveMade', data);
+  // 캐릭터 선택
+  socket.on('select_character', (data) => {
+    const result = trpgManager.selectCharacter(socket.id, data.characterClass);
+    if (!result.success) {
+      socket.emit('error', { message: result.error });
+    }
   });
 
-  // 게임 승리
-  socket.on('gameWon', (data) => {
-    const { roomId } = data;
-    io.to(roomId).emit('gameWon', data);
+  // 게임 시작
+  socket.on('start_trpg_game', (data) => {
+    const result = trpgManager.startGame(data.roomCode, socket.id);
+    if (!result.success) {
+      socket.emit('error', { message: result.error });
+    }
+  });
+
+  // 선택지 선택
+  socket.on('make_choice', (data) => {
+    const result = trpgManager.makeChoice(data.roomCode, socket.id, data.choiceId);
+    if (result.success) {
+      socket.emit('choice_result', result);
+    } else {
+      socket.emit('error', { message: result.error });
+    }
+  });
+
+  // 주사위 굴리기
+  socket.on('roll_dice', (data) => {
+    const result = trpgManager.rollDice(data.roomCode, socket.id, data.diceType);
+    if (result.success) {
+      socket.emit('dice_roll_result', result);
+    } else {
+      socket.emit('error', { message: result.error });
+    }
+  });
+
+  // 주사위 체크 완료
+  socket.on('dice_check_complete', (data) => {
+    trpgManager.completeDiceCheck(data.roomCode, data.success, data.nextScene);
+  });
+
+  // 카리스마 체크 시작
+  socket.on('start_charisma_check', (data) => {
+    const result = trpgManager.startCharismaCheck(data.roomCode, socket.id, data.description);
+    if (result.success) {
+      socket.emit('charisma_check_id', {
+        checkId: result.checkId,
+        isYou: true
+      });
+
+      // 다른 플레이어들에게 알림
+      const roomCode = trpgManager.playerRooms.get(socket.id);
+      const room = trpgManager.rooms.get(roomCode);
+      if (room) {
+        room.players.forEach((player, playerId) => {
+          if (playerId !== socket.id) {
+            player.socket.emit('charisma_check_id', {
+              checkId: result.checkId,
+              isYou: false,
+              playerName: data.playerName || 'Player'
+            });
+          }
+        });
+      }
+    }
+  });
+
+  // 카리스마 투표
+  socket.on('vote_charisma', (data) => {
+    const result = trpgManager.voteCharisma(data.roomCode, data.checkId, socket.id, data.score);
+    if (result.success) {
+      socket.emit('vote_complete');
+
+      // 모든 투표가 완료되었는지 확인
+      const room = trpgManager.rooms.get(data.roomCode);
+      if (room) {
+        const check = room.charismaChecks.find(c => c.id === data.checkId);
+        if (check && check.votes.size >= room.players.size - 1) {
+          // 모든 투표 완료, 결과 계산
+          trpgManager.completeCharismaCheck(data.roomCode, data.checkId, data.nextScene || check.nextScene);
+        }
+      }
+    }
+  });
+
+  // 채팅 메시지
+  socket.on('send_chat', (data) => {
+    trpgManager.sendChatMessage(data.roomCode, socket.id, data.message);
   });
 
   // 연결 해제
   socket.on('disconnect', () => {
     console.log('👋 Player disconnected:', socket.id);
     gameManager.handleDisconnect(socket.id);
-
-    // 게임 룸에서 플레이어 제거
-    gameRooms.forEach((room, roomId) => {
-      const index = room.players.indexOf(socket.id);
-      if (index > -1) {
-        room.players.splice(index, 1);
-        room.sockets.splice(index, 1);
-        if (room.players.length === 0) {
-          gameRooms.delete(roomId);
-          console.log(`🗑️ Room deleted: ${roomId}`);
-        } else {
-          io.to(roomId).emit('playerLeft');
-        }
-      }
-    });
+    trpgManager.handleDisconnect(socket.id);
   });
 });
 
@@ -225,10 +262,11 @@ const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`
 ╔════════════════════════════════════════════════════════╗
-║  🎄 Christmas AI Drawing Battle Game Server 🎄        ║
+║  🎄 Christmas Game Server 🎄                          ║
 ║                                                        ║
 ║  Server running on port ${PORT}                           ║
-║  Game page: http://localhost:${PORT}/game                ║
+║  AI Drawing Battle: http://localhost:${PORT}/game        ║
+║  TRPG Game: http://localhost:${PORT}/trpg                ║
 ║                                                        ║
 ║  Ready for players! 🎮                                 ║
 ╚════════════════════════════════════════════════════════╝
