@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>크리스마스 TRPG - 산타의 잃어버린 선물 🎅</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="snow-container" id="snowContainer"></div>
+
+    <!-- 메인 메뉴 -->
+    <div id="mainMenu" class="screen active">
+        <div class="menu-container">
+            <h1 class="game-title">🎄 크리스마스 TRPG 🎄</h1>
+            <h2 class="game-subtitle">산타의 잃어버린 선물</h2>
+            <p class="game-description">
+                친구들과 함께 크리스마스를 구하는 온라인 협력 어드벤처!<br>
+                예상 플레이 시간: 약 1시간
+            </p>
+
+            <div class="menu-buttons">
+                <button id="createRoomBtn" class="btn btn-primary">
+                    🏠 방 만들기
+                </button>
+                <button id="joinRoomBtn" class="btn btn-secondary">
+                    🚪 방 참가하기
+                </button>
+            </div>
+
+            <div id="nameInputSection" class="input-section hidden">
+                <input type="text" id="playerNameInput" placeholder="플레이어 이름 입력" maxlength="20">
+                <button id="confirmNameBtn" class="btn btn-primary">확인</button>
+            </div>
+
+            <div id="joinInputSection" class="input-section hidden">
+                <input type="text" id="roomCodeInput" placeholder="방 코드 입력 (6자리)" maxlength="6">
+                <button id="confirmJoinBtn" class="btn btn-primary">참가</button>
+            </div>
+
+            <div id="errorMessage" class="error-message hidden"></div>
+        </div>
+    </div>
+
+    <!-- 로비 화면 -->
+    <div id="lobbyScreen" class="screen">
+        <div class="lobby-container">
+            <div class="lobby-header">
+                <h2>🎮 게임 로비</h2>
+                <div class="room-code-display">
+                    방 코드: <span id="displayRoomCode" class="room-code">------</span>
+                    <button id="copyCodeBtn" class="btn-small">📋 복사</button>
+                </div>
+            </div>
+
+            <div class="lobby-content">
+                <!-- 플레이어 목록 -->
+                <div class="players-section">
+                    <h3>플레이어 목록 (<span id="playerCount">0</span>/6)</h3>
+                    <div id="playersList" class="players-list"></div>
+                </div>
+
+                <!-- 캐릭터 선택 -->
+                <div class="character-section">
+                    <h3>캐릭터 선택</h3>
+                    <div id="characterSelection" class="character-grid"></div>
+                </div>
+            </div>
+
+            <div class="lobby-footer">
+                <button id="leaveLobbyBtn" class="btn btn-secondary">나가기</button>
+                <button id="startGameBtn" class="btn btn-primary" disabled>게임 시작</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 게임 화면 -->
+    <div id="gameScreen" class="screen">
+        <div class="game-container">
+            <!-- 상단 정보바 -->
+            <div class="game-header">
+                <div class="header-left">
+                    <h3 id="sceneTitle">장면 제목</h3>
+                </div>
+                <div class="header-right">
+                    <span id="gameTimer">00:00</span>
+                </div>
+            </div>
+
+            <!-- 메인 컨텐츠 -->
+            <div class="game-main">
+                <!-- 좌측: 스토리 & 선택지 -->
+                <div class="story-panel">
+                    <div class="story-content" id="storyContent">
+                        <p>스토리 내용이 여기 표시됩니다...</p>
+                    </div>
+
+                    <div class="choices-container" id="choicesContainer">
+                        <!-- 선택지 버튼들이 동적으로 추가됩니다 -->
+                    </div>
+                </div>
+
+                <!-- 우측: 플레이어 정보 & 채팅 -->
+                <div class="side-panel">
+                    <!-- 플레이어 상태 -->
+                    <div class="players-status">
+                        <h4>🎭 플레이어</h4>
+                        <div id="playersStatus" class="status-list"></div>
+                    </div>
+
+                    <!-- 채팅 -->
+                    <div class="chat-section">
+                        <h4>💬 채팅</h4>
+                        <div id="chatMessages" class="chat-messages"></div>
+                        <div class="chat-input-container">
+                            <input type="text" id="chatInput" placeholder="메시지 입력...">
+                            <button id="sendChatBtn" class="btn-small">전송</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 주사위 굴리기 모달 -->
+    <div id="diceModal" class="modal">
+        <div class="modal-content dice-modal-content">
+            <h3>🎲 주사위 굴리기</h3>
+            <p id="diceDescription">주사위를 굴려 도전하세요!</p>
+            <p class="dice-info">
+                필요한 점수: <span id="diceRequirement">0</span><br>
+                사용 능력: <span id="diceStat">-</span>
+            </p>
+
+            <div class="dice-container">
+                <div id="diceDisplay" class="dice">?</div>
+            </div>
+
+            <div class="dice-buttons">
+                <button id="rollDiceBtn" class="btn btn-primary">주사위 굴리기!</button>
+            </div>
+
+            <div id="diceResult" class="dice-result hidden">
+                <p class="result-text"></p>
+                <button id="continueDiceBtn" class="btn btn-secondary">계속</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 카리스마 체크 모달 -->
+    <div id="charismaModal" class="modal">
+        <div class="modal-content charisma-modal-content">
+            <h3>✨ 카리스마 체크</h3>
+            <p id="charismaDescription">플레이어의 설득력을 평가하세요!</p>
+
+            <!-- 카메라 영역 -->
+            <div id="cameraSection" class="camera-section hidden">
+                <h4><span id="charismaPlayerName">플레이어</span>님의 차례</h4>
+                <video id="charismaVideo" autoplay playsinline></video>
+                <p class="camera-instruction">카메라를 보고 열정적으로 연기하세요!</p>
+            </div>
+
+            <!-- 투표 영역 -->
+            <div id="votingSection" class="voting-section hidden">
+                <h4><span id="votingPlayerName">플레이어</span>님의 연기를 평가하세요!</h4>
+                <div class="star-rating">
+                    <button class="star-btn" data-score="1">⭐</button>
+                    <button class="star-btn" data-score="2">⭐⭐</button>
+                    <button class="star-btn" data-score="3">⭐⭐⭐</button>
+                    <button class="star-btn" data-score="4">⭐⭐⭐⭐</button>
+                    <button class="star-btn" data-score="5">⭐⭐⭐⭐⭐</button>
+                </div>
+                <p class="voting-status">
+                    투표 현황: <span id="voteCount">0</span> / <span id="totalVoters">0</span>
+                </p>
+            </div>
+
+            <!-- 결과 영역 -->
+            <div id="charismaResult" class="charisma-result hidden">
+                <h4>결과</h4>
+                <p class="result-score">평균 점수: <span id="avgScore">0</span> / 5</p>
+                <p class="result-text"></p>
+                <button id="continueCharismaBtn" class="btn btn-secondary">계속</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 게임 종료 모달 -->
+    <div id="endModal" class="modal">
+        <div class="modal-content end-modal-content">
+            <h2>🎄 메리 크리스마스! 🎄</h2>
+            <div id="endContent">
+                <p>게임이 종료되었습니다!</p>
+            </div>
+            <div class="end-stats">
+                <h4>게임 통계</h4>
+                <p>플레이 시간: <span id="totalPlayTime">00:00</span></p>
+                <p>완료한 장면: <span id="completedScenes">0</span>개</p>
+            </div>
+            <button id="backToMenuBtn" class="btn btn-primary">메인 메뉴로</button>
+        </div>
+    </div>
+
+    <!-- Socket.io 클라이언트 -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="client.js"></script>
+</body>
+</html>
