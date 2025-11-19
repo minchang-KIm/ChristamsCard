@@ -311,6 +311,10 @@ body {
     left: 50%;
     transform: translateX(-50%);
     z-index: 1000;
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
 .game-btn {
@@ -334,4 +338,14 @@ body {
 
 .game-btn:active {
     transform: translateY(-1px);
+}
+
+.trpg-btn {
+    background: linear-gradient(135deg, #2e7d32, #43a047);
+    box-shadow: 0 5px 20px rgba(67, 160, 71, 0.4);
+}
+
+.trpg-btn:hover {
+    background: linear-gradient(135deg, #43a047, #4caf50);
+    box-shadow: 0 8px 30px rgba(67, 160, 71, 0.6);
 }
