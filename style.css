@@ -311,6 +311,10 @@ body {
     left: 50%;
     transform: translateX(-50%);
     z-index: 1000;
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
 .game-btn {
@@ -334,4 +338,13 @@ body {
 
 .game-btn:active {
     transform: translateY(-1px);
+}
+
+.ar-card-btn {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+}
+
+.ar-card-btn:hover {
+    box-shadow: 0 8px 30px rgba(102, 126, 234, 0.6);
 }
