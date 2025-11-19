@@ -174,6 +174,12 @@ class Game {
     // 화면 전환
     this.switchScreen('gameScreen');
 
+    // 캔버스와 렌더러 재초기화 (화면 전환 후 크기가 잡힘)
+    setTimeout(() => {
+      this.drawingCanvas.setupCanvas();
+      this.renderer.resize();
+    }, 100);
+
     // 제시어 표시
     this.updatePrompt(this.currentPrompt);
 
