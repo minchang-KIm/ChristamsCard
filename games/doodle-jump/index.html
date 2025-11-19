@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Snowman Jump ⛄</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <a href="/games.html" class="back-btn">← Back</a>
+            <h1>⛄ Snowman Jump</h1>
+            <div class="score-display">
+                <div class="current-score">Score: <span id="score">0</span></div>
+                <div class="high-score">Best: <span id="highScore">0</span></div>
+            </div>
+        </div>
+
+        <div class="game-area">
+            <canvas id="gameCanvas"></canvas>
+
+            <div class="start-screen" id="startScreen">
+                <h2>Snowman Jump</h2>
+                <p>Tilt your device or use arrow keys to move!</p>
+                <p>Jump on platforms to go higher!</p>
+                <button class="start-btn" id="startBtn">Start Game</button>
+            </div>
+
+            <div class="game-over-screen" id="gameOverScreen" style="display: none;">
+                <h2>Game Over!</h2>
+                <p class="final-score">Score: <span id="finalScore">0</span></p>
+                <p class="best-score">Best: <span id="bestScore">0</span></p>
+                <button class="restart-btn" id="restartBtn">Play Again</button>
+            </div>
+        </div>
+
+        <div class="controls" id="mobileControls" style="display: none;">
+            <button class="control-btn left" id="leftBtn">←</button>
+            <button class="control-btn right" id="rightBtn">→</button>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>

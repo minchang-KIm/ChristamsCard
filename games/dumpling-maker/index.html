@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dumpling Maker 🥟</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+        }
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 2rem;
+        }
+        .header h1 { font-size: 3rem; margin-bottom: 0.5rem; }
+        .back-btn {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            display: inline-block;
+        }
+        .game-area {
+            background: white;
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+        }
+        .step {
+            display: none;
+            text-align: center;
+        }
+        .step.active { display: block; }
+        .step h2 { color: #333; margin-bottom: 1.5rem; }
+        .ingredients {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        .ingredient {
+            padding: 2rem;
+            background: #f0f0f0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 3rem;
+        }
+        .ingredient:hover { transform: translateY(-5px); background: #e0e0e0; }
+        .ingredient.selected { background: #f093fb; }
+        .wrapper {
+            width: 300px;
+            height: 300px;
+            margin: 2rem auto;
+            position: relative;
+            background: #FFF8DC;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .wrapper:hover { transform: scale(1.05); }
+        .btn {
+            padding: 1rem 3rem;
+            font-size: 1.2rem;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 1rem;
+        }
+        .score {
+            text-align: center;
+            font-size: 2rem;
+            color: #333;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <a href="/games.html" class="back-btn">← Back</a>
+    <div class="header">
+        <h1>🥟 Dumpling Maker</h1>
+        <p>Make delicious Christmas dumplings!</p>
+    </div>
+
+    <div class="game-area">
+        <div class="step active" id="step1">
+            <h2>Step 1: Choose Your Filling</h2>
+            <div class="ingredients">
+                <div class="ingredient" onclick="game.selectIngredient(0)">🥩</div>
+                <div class="ingredient" onclick="game.selectIngredient(1)">🥕</div>
+                <div class="ingredient" onclick="game.selectIngredient(2)">🧅</div>
+                <div class="ingredient" onclick="game.selectIngredient(3)">🌶️</div>
+                <div class="ingredient" onclick="game.selectIngredient(4)">🧄</div>
+                <div class="ingredient" onclick="game.selectIngredient(5)">🥬</div>
+            </div>
+            <button class="btn" onclick="game.nextStep()">Next Step</button>
+        </div>
+
+        <div class="step" id="step2">
+            <h2>Step 2: Wrap the Dumpling</h2>
+            <p>Click to wrap!</p>
+            <div class="wrapper" onclick="game.wrap()">🥟</div>
+            <div class="score">Wrapped: <span id="wrapped">0</span> / 5</div>
+        </div>
+
+        <div class="step" id="step3">
+            <h2>Step 3: Cook Your Dumplings</h2>
+            <p>Click to cook!</p>
+            <div style="font-size: 5rem; text-align: center; margin: 2rem 0; cursor: pointer;" onclick="game.cook()">
+                🍳
+            </div>
+            <div class="score">Cooking Progress: <span id="progress">0</span>%</div>
+        </div>
+
+        <div class="step" id="step4">
+            <h2>🎉 Your Dumplings are Ready!</h2>
+            <div style="font-size: 10rem; text-align: center; margin: 2rem 0;">🥟</div>
+            <div class="score">Deliciousness: <span id="rating">⭐⭐⭐⭐⭐</span></div>
+            <button class="btn" onclick="location.reload()">Make More!</button>
+        </div>
+    </div>
+
+    <script>
+        class DumplingGame {
+            constructor() {
+                this.currentStep = 1;
+                this.selectedIngredients = [];
+                this.wrappedCount = 0;
+                this.cookProgress = 0;
+            }
+
+            selectIngredient(index) {
+                const ingredients = document.querySelectorAll('.ingredient');
+                ingredients[index].classList.toggle('selected');
+                const idx = this.selectedIngredients.indexOf(index);
+                if (idx > -1) {
+                    this.selectedIngredients.splice(idx, 1);
+                } else {
+                    this.selectedIngredients.push(index);
+                }
+            }
+
+            nextStep() {
+                if (this.selectedIngredients.length === 0) {
+                    alert('Please select at least one ingredient!');
+                    return;
+                }
+                this.currentStep++;
+                this.showStep(this.currentStep);
+            }
+
+            wrap() {
+                this.wrappedCount++;
+                document.getElementById('wrapped').textContent = this.wrappedCount;
+                if (this.wrappedCount >= 5) {
+                    setTimeout(() => {
+                        this.currentStep++;
+                        this.showStep(this.currentStep);
+                    }, 500);
+                }
+            }
+
+            cook() {
+                this.cookProgress += 20;
+                document.getElementById('progress').textContent = this.cookProgress;
+                if (this.cookProgress >= 100) {
+                    setTimeout(() => {
+                        this.currentStep++;
+                        this.showStep(this.currentStep);
+                    }, 500);
+                }
+            }
+
+            showStep(step) {
+                document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+                document.getElementById(`step${step}`).classList.add('active');
+            }
+        }
+
+        const game = new DumplingGame();
+    </script>
+</body>
+</html>

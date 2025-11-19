@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Christmas Monopoly 🏠</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            color: white;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .back-btn {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+        .board-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(11, 60px);
+            grid-template-rows: repeat(11, 60px);
+            gap: 0;
+            background: #90EE90;
+            border: 3px solid #333;
+        }
+        .space {
+            border: 1px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            padding: 0.2rem;
+            text-align: center;
+            position: relative;
+        }
+        .corner { grid-column: span 1; grid-row: span 1; font-size: 1.5rem; background: #FFD700; }
+        .player-piece {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            position: absolute;
+            font-size: 1rem;
+        }
+        .controls {
+            margin-top: 1rem;
+            text-align: center;
+        }
+        .btn {
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 0.5rem;
+        }
+        .status {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-top: 1rem;
+            color: #333;
+        }
+        .player-info {
+            display: flex;
+            gap: 2rem;
+            margin-top: 1rem;
+            color: #333;
+        }
+        .lobby {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 3rem;
+            border-radius: 20px;
+            text-align: center;
+            color: #333;
+        }
+        .lobby button {
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <a href="/games.html" class="back-btn">← Back</a>
+    <div class="header">
+        <h1>🏠 Christmas Monopoly 🎄</h1>
+    </div>
+
+    <div id="game" style="display:none;">
+        <div class="board-container">
+            <div class="board" id="board"></div>
+            <div class="status" id="status">Waiting...</div>
+            <div class="player-info">
+                <div>Player 1: $<span id="p1money">1500</span></div>
+                <div>Player 2: $<span id="p2money">1500</span></div>
+            </div>
+            <div class="controls">
+                <button class="btn" onclick="rollDice()">🎲 Roll Dice</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="lobby" id="lobby">
+        <h2>Join or Create Game</h2>
+        <input type="text" id="roomId" placeholder="Room ID (optional)" style="padding: 0.8rem; margin: 0.5rem; font-size: 1rem; border: 2px solid #667eea; border-radius: 10px;">
+        <br>
+        <button onclick="createRoom()">Create Room</button>
+        <button onclick="joinRoom()">Join Room</button>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let roomId = null;
+        let myPlayer = null;
+        const players = [{pos: 0, money: 1500}, {pos: 0, money: 1500}];
+
+        const spaces = ['GO', '🎄', '🎁', '⛄', 'TAX', '🚂', '❄️', '?', '🎅', '🔔', 'JAIL',
+                        '🌟', '⚡', '🎀', '🎵', '🚂', '🏠', '?', '🎉', '🎊', 'PARKING',
+                        '🎈', '?', '🎶', '💝', '🚂', '🎪', '🎨', '💎', '🏆', 'GO TO JAIL',
+                        '💫', '⭐', '?', '🌙', '🚂', '?', '🎯', 'TAX', '🎇'];
+
+        function createRoom() {
+            roomId = document.getElementById('roomId').value || Math.random().toString(36).substring(7);
+            socket.emit('createRoom', { roomId, game: 'monopoly' });
+        }
+
+        function joinRoom() {
+            roomId = document.getElementById('roomId').value;
+            if (!roomId) { alert('Please enter a room ID'); return; }
+            socket.emit('joinRoom', { roomId, game: 'monopoly' });
+        }
+
+        socket.on('roomCreated', (data) => {
+            myPlayer = 0;
+            document.getElementById('lobby').style.display = 'none';
+            document.getElementById('game').style.display = 'block';
+            initBoard();
+        });
+
+        socket.on('roomJoined', () => {
+            myPlayer = 1;
+            document.getElementById('lobby').style.display = 'none';
+            document.getElementById('game').style.display = 'block';
+            initBoard();
+        });
+
+        function initBoard() {
+            const board = document.getElementById('board');
+            board.innerHTML = '';
+
+            // Simple 4x4 corner board for demo
+            for (let i = 0; i < 11; i++) {
+                for (let j = 0; j < 11; j++) {
+                    const space = document.createElement('div');
+                    space.className = 'space';
+
+                    // Only edges
+                    if (i === 0 || i === 10 || j === 0 || j === 10) {
+                        let idx = 0;
+                        if (i === 0) idx = j;
+                        else if (j === 10) idx = 10 + i;
+                        else if (i === 10) idx = 30 - j;
+                        else idx = 40 - i;
+
+                        space.textContent = spaces[idx % spaces.length];
+                        space.id = 'space-' + (idx % 40);
+                        board.appendChild(space);
+                    } else if (i > 0 && i < 10 && j > 0 && j < 10) {
+                        space.style.background = '#E8F5E9';
+                        space.style.border = 'none';
+                        if (i === 5 && j === 5) {
+                            space.textContent = '🎄';
+                            space.style.fontSize = '3rem';
+                        }
+                        board.appendChild(space);
+                    }
+                }
+            }
+            updateBoard();
+        }
+
+        function updateBoard() {
+            document.querySelectorAll('.player-piece').forEach(p => p.remove());
+            players.forEach((player, idx) => {
+                const space = document.getElementById('space-' + player.pos);
+                if (space) {
+                    const piece = document.createElement('div');
+                    piece.className = 'player-piece';
+                    piece.textContent = ['🔴', '🔵'][idx];
+                    piece.style.left = (idx * 15) + 'px';
+                    space.appendChild(piece);
+                }
+            });
+            document.getElementById('p1money').textContent = players[0].money;
+            document.getElementById('p2money').textContent = players[1].money;
+        }
+
+        function rollDice() {
+            const dice = Math.floor(Math.random() * 6) + 1 + Math.floor(Math.random() * 6) + 1;
+            players[myPlayer].pos = (players[myPlayer].pos + dice) % 40;
+            socket.emit('makeMove', { roomId, player: myPlayer, pos: players[myPlayer].pos });
+            updateBoard();
+        }
+
+        socket.on('moveMade', (data) => {
+            players[data.player].pos = data.pos;
+            updateBoard();
+        });
+    </script>
+</body>
+</html>

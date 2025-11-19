@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Santa's Gift Catcher 🎁</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <a href="/games.html" class="back-btn">← Back</a>
+            <h1>🎁 Santa's Gift Catcher</h1>
+            <div class="score-board">
+                <div class="score">Score: <span id="score">0</span></div>
+                <div class="high-score">Best: <span id="highScore">0</span></div>
+                <div class="timer">Time: <span id="timer">60</span>s</div>
+            </div>
+        </div>
+
+        <div class="game-area">
+            <video id="video" autoplay playsinline></video>
+            <canvas id="canvas"></canvas>
+            <canvas id="gameCanvas"></canvas>
+
+            <div class="instructions" id="instructions">
+                <h2>How to Play</h2>
+                <p>👋 Move your hands to catch falling gifts!</p>
+                <p>🎁 Each gift = 10 points</p>
+                <p>💣 Avoid bombs or lose points!</p>
+                <button id="startBtn" class="start-btn">Start Game</button>
+                <p class="camera-note">* Camera access required</p>
+            </div>
+
+            <div class="game-over" id="gameOver" style="display: none;">
+                <h2>Game Over!</h2>
+                <p>Final Score: <span id="finalScore">0</span></p>
+                <p>High Score: <span id="finalHighScore">0</span></p>
+                <button id="restartBtn" class="restart-btn">Play Again</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>

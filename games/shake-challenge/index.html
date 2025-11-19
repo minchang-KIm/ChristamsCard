@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shake Challenge 📳</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="snow-container" id="snowContainer"></div>
+
+    <div class="game-container">
+        <div class="header">
+            <a href="/games.html" class="back-btn">← Back</a>
+            <h1>📳 Shake Challenge</h1>
+        </div>
+
+        <div class="game-area">
+            <div class="shake-meter">
+                <div class="meter-title">Shake Intensity</div>
+                <div class="meter-bar">
+                    <div class="meter-fill" id="meterFill"></div>
+                </div>
+            </div>
+
+            <div class="shake-counter">
+                <div class="counter-label">Shakes</div>
+                <div class="counter-value" id="shakeCount">0</div>
+            </div>
+
+            <div class="timer-display">
+                <div class="timer-label">Time</div>
+                <div class="timer-value" id="timerValue">30</div>
+            </div>
+
+            <div class="high-score-display">
+                <div class="hs-label">Best Score</div>
+                <div class="hs-value" id="highScoreValue">0</div>
+            </div>
+
+            <div class="game-status" id="gameStatus">
+                <h2>Ready to Shake!</h2>
+                <p>Shake your phone as fast as you can for 30 seconds!</p>
+                <button class="start-btn" id="startBtn">Start Challenge</button>
+            </div>
+
+            <div class="game-over" id="gameOver" style="display: none;">
+                <h2>Challenge Complete!</h2>
+                <p class="final-score">You shook <span id="finalShakes">0</span> times!</p>
+                <p class="rank" id="rank"></p>
+                <button class="restart-btn" id="restartBtn">Try Again</button>
+                <button class="share-btn" id="shareBtn">Share Score</button>
+            </div>
+
+            <div class="santa-animation" id="santa">🎅</div>
+        </div>
+
+        <div class="leaderboard">
+            <h3>🏆 Today's Top Shakers</h3>
+            <div class="leaderboard-list" id="leaderboard">
+                <div class="leader-item">
+                    <span class="rank-badge">🥇</span>
+                    <span class="leader-name">Santa</span>
+                    <span class="leader-score">999</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>

@@ -28,6 +28,20 @@ app.get('/game', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'game', 'index.html'));
 });
 
+// 게임 허브 페이지
+app.get('/games.html', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'games.html'));
+});
+
+// 개별 게임 페이지들
+app.get('/games/:gameName', (req, res) => {
+  const gameName = req.params.gameName;
+  res.sendFile(path.join(__dirname, '..', 'games', gameName, 'index.html'));
+});
+
+// 멀티플레이어 게임 룸 관리
+const gameRooms = new Map();
+
 // Socket.io 연결 처리
 io.on('connection', (socket) => {
   console.log('🎮 New player connected:', socket.id);
@@ -99,10 +113,79 @@ io.on('connection', (socket) => {
     }
   });
 
+  // === 보드 게임 이벤트 핸들러 ===
+
+  // 방 생성
+  socket.on('createRoom', (data) => {
+    const { roomId, game } = data;
+    gameRooms.set(roomId, {
+      game: game,
+      players: [socket.id],
+      sockets: [socket],
+      state: 'waiting',
+      gameData: {}
+    });
+    socket.join(roomId);
+    socket.emit('roomCreated', { roomId });
+    console.log(`🎲 Room created: ${roomId} for ${game}`);
+  });
+
+  // 방 참가
+  socket.on('joinRoom', (data) => {
+    const { roomId, game } = data;
+    const room = gameRooms.get(roomId);
+
+    if (!room) {
+      socket.emit('error', { message: 'Room not found' });
+      return;
+    }
+
+    if (room.players.length >= 2) {
+      socket.emit('error', { message: 'Room is full' });
+      return;
+    }
+
+    room.players.push(socket.id);
+    room.sockets.push(socket);
+    room.state = 'playing';
+    socket.join(roomId);
+
+    socket.emit('roomJoined', { roomId });
+    io.to(roomId).emit('gameStart');
+    console.log(`🎲 Player joined room: ${roomId}`);
+  });
+
+  // 게임 이동 (오목, 체스, 바둑 등)
+  socket.on('makeMove', (data) => {
+    const { roomId } = data;
+    io.to(roomId).emit('moveMade', data);
+  });
+
+  // 게임 승리
+  socket.on('gameWon', (data) => {
+    const { roomId } = data;
+    io.to(roomId).emit('gameWon', data);
+  });
+
   // 연결 해제
   socket.on('disconnect', () => {
     console.log('👋 Player disconnected:', socket.id);
     gameManager.handleDisconnect(socket.id);
+
+    // 게임 룸에서 플레이어 제거
+    gameRooms.forEach((room, roomId) => {
+      const index = room.players.indexOf(socket.id);
+      if (index > -1) {
+        room.players.splice(index, 1);
+        room.sockets.splice(index, 1);
+        if (room.players.length === 0) {
+          gameRooms.delete(roomId);
+          console.log(`🗑️ Room deleted: ${roomId}`);
+        } else {
+          io.to(roomId).emit('playerLeft');
+        }
+      }
+    });
   });
 });
 
