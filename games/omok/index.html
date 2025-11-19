@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Christmas Omok ⚫⚪</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .back-btn {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+        h1 { font-size: 2rem; }
+        .game-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+        .game-board {
+            background: #DEB887;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        canvas {
+            display: block;
+            background: #DEB887;
+            cursor: pointer;
+        }
+        .status {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: white;
+        }
+        .lobby {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 3rem;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        .lobby h2 { color: #333; margin-bottom: 1.5rem; }
+        .lobby input {
+            padding: 0.8rem;
+            font-size: 1rem;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            margin: 0.5rem;
+            width: 250px;
+        }
+        .lobby button {
+            padding: 0.8rem 2rem;
+            font-size: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 0.5rem;
+        }
+        .game-over {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 3rem;
+            border-radius: 20px;
+            text-align: center;
+            display: none;
+        }
+        .game-over h2 { font-size: 2.5rem; color: #333; margin-bottom: 1rem; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="/games.html" class="back-btn">← Back</a>
+        <h1>⚫ Christmas Omok ⚪</h1>
+        <div id="playerInfo">Waiting...</div>
+    </div>
+
+    <div class="game-container">
+        <div class="game-board">
+            <canvas id="board" width="600" height="600"></canvas>
+            <div class="status" id="status">Connect to play</div>
+        </div>
+    </div>
+
+    <div class="lobby" id="lobby">
+        <h2>🎄 Join or Create Game</h2>
+        <input type="text" id="roomId" placeholder="Room ID (optional)">
+        <br>
+        <button onclick="game.createRoom()">Create Room</button>
+        <button onclick="game.joinRoom()">Join Room</button>
+    </div>
+
+    <div class="game-over" id="gameOver">
+        <h2 id="winnerText">Game Over</h2>
+        <button onclick="location.reload()">Play Again</button>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>

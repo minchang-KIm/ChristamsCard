@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Christmas Rhythm Game 🎵</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <a href="/games.html" class="back-btn">← Back</a>
+            <h1>🎵 Christmas Rhythm</h1>
+            <div class="score-info">
+                <div class="score">Score: <span id="score">0</span></div>
+                <div class="combo">Combo: <span id="combo">0</span></div>
+                <div class="accuracy">Accuracy: <span id="accuracy">100</span>%</div>
+            </div>
+        </div>
+
+        <div class="game-area">
+            <canvas id="gameCanvas"></canvas>
+
+            <div class="hit-zones">
+                <div class="hit-zone" data-lane="0">
+                    <div class="key-indicator">D</div>
+                    <div class="hit-effect" id="effect0"></div>
+                </div>
+                <div class="hit-zone" data-lane="1">
+                    <div class="key-indicator">F</div>
+                    <div class="hit-effect" id="effect1"></div>
+                </div>
+                <div class="hit-zone" data-lane="2">
+                    <div class="key-indicator">J</div>
+                    <div class="hit-effect" id="effect2"></div>
+                </div>
+                <div class="hit-zone" data-lane="3">
+                    <div class="key-indicator">K</div>
+                    <div class="hit-effect" id="effect3"></div>
+                </div>
+            </div>
+
+            <div class="judgment-display" id="judgment"></div>
+        </div>
+
+        <div class="song-select" id="songSelect">
+            <h2>Select a Song</h2>
+            <div class="songs-grid">
+                <div class="song-card" data-song="jingle-bells">
+                    <div class="song-icon">🔔</div>
+                    <h3>Jingle Bells</h3>
+                    <p class="difficulty easy">Easy</p>
+                </div>
+                <div class="song-card" data-song="silent-night">
+                    <div class="song-icon">⭐</div>
+                    <h3>Silent Night</h3>
+                    <p class="difficulty medium">Medium</p>
+                </div>
+                <div class="song-card" data-song="deck-the-halls">
+                    <div class="song-icon">🎄</div>
+                    <h3>Deck the Halls</h3>
+                    <p class="difficulty hard">Hard</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-over" id="gameOver" style="display: none;">
+            <h2>Song Complete!</h2>
+            <div class="results">
+                <div class="result-item">
+                    <span class="result-label">Score</span>
+                    <span class="result-value" id="finalScore">0</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Max Combo</span>
+                    <span class="result-value" id="maxCombo">0</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Accuracy</span>
+                    <span class="result-value" id="finalAccuracy">0%</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Perfect</span>
+                    <span class="result-value perfect" id="perfectCount">0</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Good</span>
+                    <span class="result-value good" id="goodCount">0</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Miss</span>
+                    <span class="result-value miss" id="missCount">0</span>
+                </div>
+            </div>
+            <div class="rank-display" id="rankDisplay">S</div>
+            <button class="menu-btn" id="menuBtn">Back to Menu</button>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>

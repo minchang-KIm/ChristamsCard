@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pizza Maker 🍕</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+        }
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 2rem;
+        }
+        .header h1 { font-size: 3rem; margin-bottom: 0.5rem; }
+        .back-btn {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            display: inline-block;
+        }
+        .game-area {
+            background: white;
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+        .pizza-canvas {
+            width: 400px;
+            height: 400px;
+            background: #FFE4B5;
+            border-radius: 50%;
+            margin: 2rem auto;
+            position: relative;
+            overflow: hidden;
+            cursor: crosshair;
+        }
+        .topping {
+            position: absolute;
+            font-size: 2rem;
+            pointer-events: none;
+        }
+        .toppings-bar {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin: 1rem 0;
+        }
+        .topping-btn {
+            padding: 1rem;
+            font-size: 2rem;
+            background: #f0f0f0;
+            border: 3px solid transparent;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .topping-btn:hover { transform: translateY(-3px); }
+        .topping-btn.selected { border-color: #f5576c; background: #ffe0e0; }
+        .btn {
+            padding: 1rem 3rem;
+            font-size: 1.2rem;
+            background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 1rem;
+        }
+        .result {
+            display: none;
+            text-align: center;
+        }
+        .result.show { display: block; }
+        .result h2 { font-size: 2.5rem; color: #333; margin: 1rem 0; }
+    </style>
+</head>
+<body>
+    <a href="/games.html" class="back-btn">← Back</a>
+    <div class="header">
+        <h1>🍕 Christmas Pizza Maker</h1>
+        <p>Create your perfect Christmas pizza!</p>
+    </div>
+
+    <div class="game-area">
+        <div id="making">
+            <h2>Add Toppings</h2>
+            <div class="toppings-bar">
+                <button class="topping-btn selected" onclick="game.selectTopping('🍅')">🍅</button>
+                <button class="topping-btn" onclick="game.selectTopping('🧀')">🧀</button>
+                <button class="topping-btn" onclick="game.selectTopping('🍄')">🍄</button>
+                <button class="topping-btn" onclick="game.selectTopping('🥓')">🥓</button>
+                <button class="topping-btn" onclick="game.selectTopping('🫑')">🫑</button>
+                <button class="topping-btn" onclick="game.selectTopping('🌶️')">🌶️</button>
+            </div>
+            <div class="pizza-canvas" id="pizza"></div>
+            <button class="btn" onclick="game.bake()">🔥 Bake Pizza</button>
+        </div>
+
+        <div class="result" id="result">
+            <h2>🎉 Pizza Ready!</h2>
+            <div style="font-size: 10rem; margin: 2rem 0;">🍕</div>
+            <p style="font-size: 1.5rem; color: #333;">Deliciousness: ⭐⭐⭐⭐⭐</p>
+            <button class="btn" onclick="location.reload()">Make Another!</button>
+        </div>
+    </div>
+
+    <script>
+        class PizzaGame {
+            constructor() {
+                this.currentTopping = '🍅';
+                this.pizza = document.getElementById('pizza');
+                this.pizza.addEventListener('click', (e) => this.addTopping(e));
+            }
+
+            selectTopping(topping) {
+                this.currentTopping = topping;
+                document.querySelectorAll('.topping-btn').forEach(btn => {
+                    btn.classList.remove('selected');
+                    if (btn.textContent === topping) {
+                        btn.classList.add('selected');
+                    }
+                });
+            }
+
+            addTopping(e) {
+                const rect = this.pizza.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                const topping = document.createElement('div');
+                topping.className = 'topping';
+                topping.textContent = this.currentTopping;
+                topping.style.left = x - 15 + 'px';
+                topping.style.top = y - 15 + 'px';
+                this.pizza.appendChild(topping);
+            }
+
+            bake() {
+                document.getElementById('making').style.display = 'none';
+                document.getElementById('result').classList.add('show');
+            }
+        }
+
+        const game = new PizzaGame();
+    </script>
+</body>
+</html>

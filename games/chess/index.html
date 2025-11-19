@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Christmas Chess ♟️</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            color: white;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .back-btn {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            display: inline-block;
+        }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(8, 70px);
+            grid-template-rows: repeat(8, 70px);
+            border: 5px solid #8B4513;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+        .square {
+            width: 70px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .square.light { background: #F0D9B5; }
+        .square.dark { background: #B58863; }
+        .square.selected { background: #7fa650; }
+        .square.possible { background: #90EE90; }
+        .square:hover { opacity: 0.8; }
+        .status {
+            margin-top: 1rem;
+            font-size: 1.3rem;
+            font-weight: 600;
+            text-align: center;
+        }
+        .lobby {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 3rem;
+            border-radius: 20px;
+            text-align: center;
+            color: #333;
+        }
+        .lobby button {
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <a href="/games.html" class="back-btn">← Back</a>
+    <div class="header">
+        <h1>♟️ Christmas Chess ♟️</h1>
+    </div>
+
+    <div id="game" style="display:none;">
+        <div class="board" id="board"></div>
+        <div class="status" id="status">White's turn</div>
+    </div>
+
+    <div class="lobby" id="lobby">
+        <h2>Join or Create Game</h2>
+        <input type="text" id="roomId" placeholder="Room ID (optional)" style="padding: 0.8rem; margin: 0.5rem; font-size: 1rem; border: 2px solid #667eea; border-radius: 10px;">
+        <br>
+        <button onclick="createRoom()">Create Room</button>
+        <button onclick="joinRoom()">Join Room</button>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let myColor = null;
+        let roomId = null;
+        let selectedSquare = null;
+
+        const initialBoard = [
+            ['♜','♞','♝','♛','♚','♝','♞','♜'],
+            ['♟','♟','♟','♟','♟','♟','♟','♟'],
+            ['','','','','','','',''],
+            ['','','','','','','',''],
+            ['','','','','','','',''],
+            ['','','','','','','',''],
+            ['♙','♙','♙','♙','♙','♙','♙','♙'],
+            ['♖','♘','♗','♕','♔','♗','♘','♖']
+        ];
+
+        let board = JSON.parse(JSON.stringify(initialBoard));
+
+        function createRoom() {
+            roomId = document.getElementById('roomId').value || Math.random().toString(36).substring(7);
+            socket.emit('createRoom', { roomId, game: 'chess' });
+        }
+
+        function joinRoom() {
+            roomId = document.getElementById('roomId').value;
+            if (!roomId) { alert('Please enter a room ID'); return; }
+            socket.emit('joinRoom', { roomId, game: 'chess' });
+        }
+
+        socket.on('roomCreated', (data) => {
+            myColor = 'white';
+            document.getElementById('lobby').style.display = 'none';
+            document.getElementById('game').style.display = 'block';
+            document.getElementById('status').textContent = `Room ${data.roomId} - Waiting...`;
+            initBoard();
+        });
+
+        socket.on('roomJoined', (data) => {
+            myColor = 'black';
+            document.getElementById('lobby').style.display = 'none';
+            document.getElementById('game').style.display = 'block';
+            initBoard();
+        });
+
+        socket.on('gameStart', () => {
+            document.getElementById('status').textContent = "White's turn";
+        });
+
+        socket.on('moveMade', (data) => {
+            board[data.toRow][data.toCol] = board[data.fromRow][data.fromCol];
+            board[data.fromRow][data.fromCol] = '';
+            renderBoard();
+            const turn = data.player === 'white' ? 'Black' : 'White';
+            document.getElementById('status').textContent = turn + "'s turn";
+        });
+
+        function initBoard() {
+            const boardEl = document.getElementById('board');
+            boardEl.innerHTML = '';
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const square = document.createElement('div');
+                    square.className = 'square ' + ((row + col) % 2 === 0 ? 'light' : 'dark');
+                    square.dataset.row = row;
+                    square.dataset.col = col;
+                    square.onclick = () => handleSquareClick(row, col);
+                    boardEl.appendChild(square);
+                }
+            }
+            renderBoard();
+        }
+
+        function renderBoard() {
+            const squares = document.querySelectorAll('.square');
+            squares.forEach(sq => {
+                const row = parseInt(sq.dataset.row);
+                const col = parseInt(sq.dataset.col);
+                sq.textContent = board[row][col];
+            });
+        }
+
+        function handleSquareClick(row, col) {
+            if (selectedSquare) {
+                if (selectedSquare.row === row && selectedSquare.col === col) {
+                    selectedSquare = null;
+                    document.querySelectorAll('.square').forEach(s => s.classList.remove('selected'));
+                } else {
+                    socket.emit('makeMove', {
+                        roomId,
+                        fromRow: selectedSquare.row,
+                        fromCol: selectedSquare.col,
+                        toRow: row,
+                        toCol: col,
+                        player: myColor
+                    });
+                    selectedSquare = null;
+                    document.querySelectorAll('.square').forEach(s => s.classList.remove('selected'));
+                }
+            } else if (board[row][col]) {
+                selectedSquare = { row, col };
+                document.querySelector(`[data-row="${row}"][data-col="${col}"]`).classList.add('selected');
+            }
+        }
+    </script>
+</body>
+</html>

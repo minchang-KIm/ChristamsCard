@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Angry Snowballs ❄️</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(180deg, #87CEEB 0%, #E0F6FF 100%);
+            overflow: hidden;
+        }
+        .header {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .back-btn {
+            color: #333;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            background: rgba(135, 206, 235, 0.3);
+            border-radius: 10px;
+        }
+        h1 { font-size: 2rem; color: #333; }
+        .score { font-size: 1.2rem; font-weight: 600; }
+        canvas {
+            display: block;
+            margin: 0 auto;
+            background: linear-gradient(180deg, #87CEEB 0%, #E0F6FF 100%);
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
+        }
+        .game-over {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 3rem;
+            border-radius: 20px;
+            text-align: center;
+            display: none;
+        }
+        .game-over h2 { font-size: 2.5rem; margin-bottom: 1rem; }
+        .restart-btn {
+            padding: 1rem 3rem;
+            font-size: 1.3rem;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="/games.html" class="back-btn">← Back</a>
+        <h1>❄️ Angry Snowballs</h1>
+        <div class="score">Level: <span id="level">1</span> | Score: <span id="score">0</span></div>
+    </div>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <div class="game-over" id="gameOver">
+        <h2>Level Complete!</h2>
+        <p>Score: <span id="finalScore">0</span></p>
+        <button class="restart-btn" onclick="game.nextLevel()">Next Level</button>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>

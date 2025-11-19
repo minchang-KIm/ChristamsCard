@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baduk (Go) ⚫⚪</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            color: white;
+        }
+        .header { text-align: center; margin-bottom: 2rem; }
+        .back-btn {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            display: inline-block;
+        }
+        canvas {
+            background: #DEB887;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            cursor: pointer;
+        }
+        .status {
+            margin-top: 1rem;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+        .lobby {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 3rem;
+            border-radius: 20px;
+            text-align: center;
+            color: #333;
+        }
+        .lobby button {
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <a href="/games.html" class="back-btn">← Back</a>
+    <div class="header">
+        <h1>⚫ Baduk (Go) ⚪</h1>
+    </div>
+
+    <div id="game" style="display:none;">
+        <canvas id="board" width="720" height="720"></canvas>
+        <div class="status" id="status">Black's turn</div>
+    </div>
+
+    <div class="lobby" id="lobby">
+        <h2>Join or Create Game</h2>
+        <input type="text" id="roomId" placeholder="Room ID (optional)" style="padding: 0.8rem; margin: 0.5rem; font-size: 1rem; border: 2px solid #667eea; border-radius: 10px;">
+        <br>
+        <button onclick="createRoom()">Create Room</button>
+        <button onclick="joinRoom()">Join Room</button>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const canvas = document.getElementById('board');
+        const ctx = canvas.getContext('2d');
+        const boardSize = 19;
+        const cellSize = 36;
+        const board = Array(boardSize).fill().map(() => Array(boardSize).fill(0));
+        let myColor = null;
+        let roomId = null;
+        let currentPlayer = 1;
+
+        function createRoom() {
+            roomId = document.getElementById('roomId').value || Math.random().toString(36).substring(7);
+            socket.emit('createRoom', { roomId, game: 'baduk' });
+        }
+
+        function joinRoom() {
+            roomId = document.getElementById('roomId').value;
+            if (!roomId) { alert('Please enter a room ID'); return; }
+            socket.emit('joinRoom', { roomId, game: 'baduk' });
+        }
+
+        socket.on('roomCreated', (data) => {
+            myColor = 1;
+            document.getElementById('lobby').style.display = 'none';
+            document.getElementById('game').style.display = 'block';
+            drawBoard();
+        });
+
+        socket.on('roomJoined', () => {
+            myColor = 2;
+            document.getElementById('lobby').style.display = 'none';
+            document.getElementById('game').style.display = 'block';
+            drawBoard();
+        });
+
+        socket.on('moveMade', (data) => {
+            board[data.row][data.col] = data.player;
+            currentPlayer = currentPlayer === 1 ? 2 : 1;
+            drawBoard();
+            document.getElementById('status').textContent = (currentPlayer === 1 ? 'Black' : 'White') + "'s turn";
+        });
+
+        function drawBoard() {
+            ctx.fillStyle = '#DEB887';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 1;
+
+            for (let i = 0; i < boardSize; i++) {
+                ctx.beginPath();
+                ctx.moveTo(cellSize + i * cellSize, cellSize);
+                ctx.lineTo(cellSize + i * cellSize, cellSize + (boardSize - 1) * cellSize);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(cellSize, cellSize + i * cellSize);
+                ctx.lineTo(cellSize + (boardSize - 1) * cellSize, cellSize + i * cellSize);
+                ctx.stroke();
+            }
+
+            for (let row = 0; row < boardSize; row++) {
+                for (let col = 0; col < boardSize; col++) {
+                    if (board[row][col] !== 0) {
+                        ctx.fillStyle = board[row][col] === 1 ? '#000' : '#fff';
+                        ctx.beginPath();
+                        ctx.arc(cellSize + col * cellSize, cellSize + row * cellSize, 16, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.strokeStyle = board[row][col] === 1 ? '#333' : '#ccc';
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        canvas.addEventListener('click', (e) => {
+            if (currentPlayer !== myColor) return;
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const col = Math.round((x - cellSize) / cellSize);
+            const row = Math.round((y - cellSize) / cellSize);
+
+            if (row >= 0 && row < boardSize && col >= 0 && col < boardSize && board[row][col] === 0) {
+                socket.emit('makeMove', { roomId, row, col, player: myColor });
+            }
+        });
+    </script>
+</body>
+</html>
