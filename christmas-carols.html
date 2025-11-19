@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>크리스마스 캐롤 플레이어</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* Snow animation */
+        .snowflake {
+            position: fixed;
+            top: -10px;
+            z-index: 1;
+            user-select: none;
+            cursor: default;
+            animation-name: snowfall;
+            animation-duration: 10s;
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+            color: white;
+            font-size: 1em;
+            opacity: 0.8;
+        }
+
+        @keyframes snowfall {
+            0% {
+                transform: translateY(0vh) rotate(0deg);
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+            }
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 30px;
+            padding: 50px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+            z-index: 10;
+        }
+
+        h1 {
+            color: #c41e3a;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .subtitle {
+            color: #165b33;
+            font-size: 1.1em;
+            margin-bottom: 30px;
+        }
+
+        .current-song {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .toggle-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .toggle-btn {
+            position: relative;
+            width: 120px;
+            height: 60px;
+            background: #ccc;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: background 0.3s;
+            border: none;
+            outline: none;
+        }
+
+        .toggle-btn.active {
+            background: linear-gradient(135deg, #c41e3a 0%, #165b33 100%);
+        }
+
+        .toggle-btn::before {
+            content: '';
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: white;
+            top: 5px;
+            left: 5px;
+            transition: transform 0.3s;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .toggle-btn.active::before {
+            transform: translateX(60px);
+        }
+
+        .status-text {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+            min-width: 60px;
+        }
+
+        .status-text.on {
+            color: #165b33;
+        }
+
+        .status-text.off {
+            color: #c41e3a;
+        }
+
+        .info {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 20px;
+            line-height: 1.6;
+        }
+
+        /* Hidden YouTube player */
+        #player {
+            display: none;
+        }
+
+        .music-note {
+            display: inline-block;
+            animation: bounce 0.6s infinite alternate;
+        }
+
+        @keyframes bounce {
+            from {
+                transform: translateY(0);
+            }
+            to {
+                transform: translateY(-10px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Snowflakes -->
+    <script>
+        function createSnowflake() {
+            const snowflake = document.createElement('div');
+            snowflake.classList.add('snowflake');
+            snowflake.innerHTML = '❄';
+            snowflake.style.left = Math.random() * 100 + 'vw';
+            snowflake.style.animationDuration = Math.random() * 3 + 7 + 's';
+            snowflake.style.fontSize = Math.random() * 1 + 0.5 + 'em';
+            document.body.appendChild(snowflake);
+
+            setTimeout(() => {
+                snowflake.remove();
+            }, 10000);
+        }
+
+        setInterval(createSnowflake, 300);
+    </script>
+
+    <div class="container">
+        <h1>🎄 크리스마스 캐롤 🎄</h1>
+        <p class="subtitle">광고 없이 무제한 랜덤 재생</p>
+
+        <div class="current-song" id="currentSong">
+            플레이어를 시작하려면 ON을 눌러주세요
+        </div>
+
+        <div class="toggle-container">
+            <button class="toggle-btn" id="toggleBtn" onclick="togglePlayer()"></button>
+            <span class="status-text off" id="statusText">OFF</span>
+        </div>
+
+        <div class="info">
+            <p><span class="music-note">🎵</span> 자동으로 다음 곡이 재생됩니다</p>
+            <p><span class="music-note">🎶</span> 랜덤 순서로 무한 반복됩니다</p>
+        </div>
+    </div>
+
+    <!-- YouTube Player (hidden) -->
+    <div id="player"></div>
+
+    <script>
+        // 크리스마스 캐롤 YouTube 비디오 ID 목록
+        const christmasCarols = [
+            { id: 'yXQViqx6GMY', title: 'All I Want for Christmas Is You - Mariah Carey' },
+            { id: 'E8gmARGvPlI', title: 'Last Christmas - Wham!' },
+            { id: 'htgr3pvBr-I', title: 'Jingle Bell Rock - Bobby Helms' },
+            { id: 'LUjTvPy_UAg', title: 'Santa Tell Me - Ariana Grande' },
+            { id: 'aAkMkVFwAoo', title: 'Let It Snow! Let It Snow! Let It Snow!' },
+            { id: 'AN_R4pR1hck', title: 'Feliz Navidad - José Feliciano' },
+            { id: 'fCNvZqpa-7Q', title: 'Santa Claus Is Coming to Town' },
+            { id: 'GqN5_m9m-4M', title: 'White Christmas - Bing Crosby' },
+            { id: 'R_vmuL0gjU0', title: 'Silent Night' },
+            { id: 'hwacxSnc4tI', title: 'Jingle Bells' },
+            { id: 'fRyhqobl0sk', title: 'Deck the Halls' },
+            { id: 'j0JRGecTPF8', title: 'The First Noel' },
+            { id: '2kOPTGOZIrw', title: 'O Holy Night' },
+            { id: 'DHjLm3DhR5c', title: 'We Wish You a Merry Christmas' },
+            { id: 'V2B1uIkQUZ4', title: 'Rockin\' Around the Christmas Tree' },
+            { id: 'dQ50I0z1hsQ', title: 'It\'s Beginning to Look a Lot Like Christmas' },
+            { id: 'mN7LW0Y00kE', title: 'Wonderful Christmastime - Paul McCartney' },
+            { id: '6M6samPEMpM', title: 'Underneath the Tree - Kelly Clarkson' },
+            { id: 'MQEwJdhfddk', title: 'Mistletoe - Justin Bieber' },
+            { id: 'Z0ajuTaHBtM', title: 'Happy Xmas (War Is Over) - John Lennon' }
+        ];
+
+        let player;
+        let isPlaying = false;
+        let currentIndex = -1;
+        let playedIndices = [];
+
+        // YouTube IFrame API 로드
+        const tag = document.createElement('script');
+        tag.src = 'https://www.youtube.com/iframe_api';
+        const firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        // API 준비되면 플레이어 생성
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                height: '0',
+                width: '0',
+                playerVars: {
+                    'autoplay': 0,
+                    'controls': 0,
+                    'disablekb': 1,
+                    'fs': 0,
+                    'modestbranding': 1,
+                    'rel': 0
+                },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+
+        function onPlayerReady(event) {
+            console.log('Player ready');
+        }
+
+        function onPlayerStateChange(event) {
+            // 비디오가 끝나면 다음 곡 재생
+            if (event.data === YT.PlayerState.ENDED) {
+                playRandomCarol();
+            }
+        }
+
+        function getRandomIndex() {
+            // 모든 곡을 재생했으면 리셋
+            if (playedIndices.length >= christmasCarols.length) {
+                playedIndices = [];
+            }
+
+            let randomIndex;
+            do {
+                randomIndex = Math.floor(Math.random() * christmasCarols.length);
+            } while (playedIndices.includes(randomIndex));
+
+            playedIndices.push(randomIndex);
+            return randomIndex;
+        }
+
+        function playRandomCarol() {
+            if (!isPlaying) return;
+
+            currentIndex = getRandomIndex();
+            const carol = christmasCarols[currentIndex];
+
+            // 현재 재생 중인 곡 표시
+            document.getElementById('currentSong').innerHTML =
+                `<span class="music-note">🎵</span> ${carol.title} <span class="music-note">🎶</span>`;
+
+            // 비디오 로드 및 재생
+            player.loadVideoById(carol.id);
+        }
+
+        function togglePlayer() {
+            const toggleBtn = document.getElementById('toggleBtn');
+            const statusText = document.getElementById('statusText');
+
+            if (!player || !player.playVideo) {
+                alert('플레이어가 아직 준비되지 않았습니다. 잠시 후 다시 시도해주세요.');
+                return;
+            }
+
+            isPlaying = !isPlaying;
+
+            if (isPlaying) {
+                toggleBtn.classList.add('active');
+                statusText.textContent = 'ON';
+                statusText.classList.remove('off');
+                statusText.classList.add('on');
+                playRandomCarol();
+            } else {
+                toggleBtn.classList.remove('active');
+                statusText.textContent = 'OFF';
+                statusText.classList.remove('on');
+                statusText.classList.add('off');
+                player.pauseVideo();
+                document.getElementById('currentSong').innerHTML =
+                    '플레이어를 시작하려면 ON을 눌러주세요';
+            }
+        }
+    </script>
+</body>
+</html>
