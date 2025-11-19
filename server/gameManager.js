@@ -183,7 +183,7 @@ class GameManager {
       healing: prompt.healing ? Math.round(prompt.healing * statMultiplier) : 0,
       similarity,
       drawingData,
-      position: 0,
+      position: player.side === 'left' ? 0 : 800,
       state: 'moving',
       icon: prompt.icon,
       side: player.side,
@@ -255,9 +255,9 @@ class GameManager {
             updates.deaths.push(nearestEnemy.id);
           }
         } else {
-          // 적에게 이동
+          // 적에게 이동 - 빠른 속도로 돌진!
           const direction = unit.side === 'left' ? 1 : -1;
-          unit.position += direction * 2;
+          unit.position += direction * 5;
 
           updates.units.push({
             unitId: unit.id,
@@ -287,9 +287,9 @@ class GameManager {
             damage
           });
         } else {
-          // 본체를 향해 이동
+          // 본체를 향해 이동 - 빠른 속도로 돌진!
           const direction = unit.side === 'left' ? 1 : -1;
-          unit.position += direction * 2;
+          unit.position += direction * 5;
 
           updates.units.push({
             unitId: unit.id,

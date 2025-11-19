@@ -244,7 +244,8 @@ body {
   border-radius: 15px;
   border: 3px solid rgba(255, 255, 255, 0.2);
   overflow: hidden;
-  min-height: 300px;
+  min-height: 400px;
+  max-height: 500px;
 }
 
 #battlefieldCanvas {
@@ -394,6 +395,9 @@ body {
   cursor: crosshair;
   display: block;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  max-width: 400px;
+  aspect-ratio: 1 / 1;
 }
 
 .similarity-display {
@@ -548,9 +552,19 @@ body {
 }
 
 @media (max-width: 768px) {
+  body {
+    overflow: auto;
+  }
+
+  #gameScreen {
+    padding: 10px;
+    gap: 10px;
+  }
+
   .game-header {
     flex-direction: column;
     gap: 15px;
+    padding: 15px;
   }
 
   .player-info {
@@ -563,5 +577,23 @@ body {
 
   .matching-container {
     padding: 30px;
+    margin: 20px;
+  }
+
+  .battlefield-container {
+    min-height: 300px;
+    max-height: 350px;
+  }
+
+  .drawing-panel {
+    padding: 15px;
+  }
+
+  #drawingCanvas {
+    max-width: 100%;
+  }
+
+  .canvas-tools {
+    flex-wrap: wrap;
   }
 }
